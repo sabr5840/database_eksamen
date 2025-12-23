@@ -60,4 +60,10 @@ GO
 INSERT INTO app.Patient (FullName) VALUES (N'Ada Patient'), (N'Bo Patient');
 INSERT INTO app.Psychologist (FullName) VALUES (N'Dr. Chen');
 
--- Chen (id=1) er tildelt Ada (id=1) men ik
+-- Chen (id=1) er tildelt Ada (id=1) men ikke Bo (id=2)
+INSERT INTO app.Assignment (PsychologistId, PatientId) VALUES (1,1);
+
+-- En note til Ada
+INSERT INTO app.Note (PatientId, PsychologistId, NoteText)
+VALUES (1,1,N'Første notat (kun Ada må se).');
+GO

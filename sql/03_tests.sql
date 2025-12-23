@@ -126,3 +126,25 @@ GO
 
 GRANT SELECT ON SCHEMA::app TO role_admin;
 GO
+
+-------------------------------------------------------------------------------
+-- NY TEST 7: Admin bypass attempt (kræver FK_Note_Assignment i schema)
+-- Ideen: Admin har tabel-rettigheder, men må stadig ikke kunne oprette note for
+-- (PsychologistId=1, PatientId=2), fordi der ikke findes en Assignment(1,2).
+-------------------------------------------------------------------------------
+PRINT '--- TEST 7: admin bypass attempt (FK skal blokere) ---';
+
+EXECUTE AS USER = 'admin1';
+
+BEGIN TRY
+  INSERT INTO app.Note (PatientId, PsychologistId, NoteText)
+  VALUES (2, 1, N'ADMIN BYPASS (should fail due to FK_Note_Assignment)');
+  PRINT 'UNEXPECTED: admin kunne bypass''e assignment-reglen via direkte INSERT';
+END TRY
+BEGIN CATCH
+  PRINT 'OK (forventet): FK_Note_Assignment forhindrede bypass';
+  PRINT ERROR_MESSAGE();
+END CATCH
+
+REVERT;
+GO

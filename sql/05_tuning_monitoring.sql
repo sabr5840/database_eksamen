@@ -155,4 +155,43 @@ ON app.Note (PatientId, CreatedAt DESC)
 INCLUDE (PsychologistId, NoteId);
 GO
 
-------------------------------------------------
+-------------------------------------------------------------------------------
+-- 4) Efter: med indeks
+-------------------------------------------------------------------------------
+PRINT '--- PERF AFTER: med indeks ---';
+
+SET STATISTICS IO ON;
+SET STATISTICS TIME ON;
+
+EXECUTE AS USER = 'patient1';
+EXEC sys.sp_set_session_context @key=N'PatientId', @value=3; -- perf patient
+
+EXEC app.usp_GetMyNotesTop @Top = 50;
+
+REVERT;
+
+SET STATISTICS IO OFF;
+SET STATISTICS TIME OFF;
+GO
+
+-------------------------------------------------------------------------------
+-- 5) Monitoring: vis index-usage (LEFT JOIN så nye indexes også vises)
+-------------------------------------------------------------------------------
+PRINT '--- MONITORING: index usage (seeks/scans/lookups/updates) ---';
+
+SELECT
+  DB_NAME() AS DbName,
+  OBJECT_NAME(i.object_id) AS TableName,
+  i.name AS IndexName,
+  COALESCE(ius.user_seeks, 0) AS user_seeks,
+  COALESCE(ius.user_scans, 0) AS user_scans,
+  COALESCE(ius.user_lookups, 0) AS user_lookups,
+  COALESCE(ius.user_updates, 0) AS user_updates
+FROM sys.indexes i
+LEFT JOIN sys.dm_db_index_usage_stats ius
+  ON ius.database_id = DB_ID()
+ AND ius.object_id = i.object_id
+ AND ius.index_id = i.index_id
+WHERE i.object_id = OBJECT_ID('app.Note')
+ORDER BY user_seeks DESC, user_scans DESC, i.name;
+GO

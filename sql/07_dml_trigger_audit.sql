@@ -94,4 +94,21 @@ GO
 
 -- psy1 laver en insert (via usp_AddNote) + sætter ActorUser
 EXECUTE AS USER='psy1';
-EXEC sys.sp_set_session_context @key=N'Psychologist
+EXEC sys.sp_set_session_context @key=N'PsychologistId', @value=1;
+EXEC sys.sp_set_session_context @key=N'ActorUser', @value=N'psy1';
+EXEC app.usp_AddNote @PatientId=1, @NoteText=N'AUDIT FINAL: note insertet af psy1';
+REVERT;
+GO
+
+-- admin laver update direkte + ryd/overskriv ActorUser så det ikke “hænger”
+EXECUTE AS USER='admin1';
+EXEC sys.sp_set_session_context @key=N'ActorUser', @value=N'admin1';
+UPDATE app.Note SET NoteText = N'AUDIT FINAL: note opdateret af admin' WHERE NoteId = 1;
+REVERT;
+GO
+
+-- auditor kan se audit summary
+EXECUTE AS USER='auditor1';
+SELECT * FROM app.v_NoteAuditSummary ORDER BY ChangeDate DESC, ActorUser, ActionType;
+REVERT;
+GO
