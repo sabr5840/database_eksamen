@@ -1,0 +1,28 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Local env files (if you add any later)
+.env
+.env.*
+
+# SQL Server local artifacts / backups (should not be committed)
+*.mdf
+*.ldf
+*.bak
+*.trn
+
+# Docker / compose overrides (local)
+docker-compose.override.yml
+
+# Temporary files
+tmp/
+temp/
